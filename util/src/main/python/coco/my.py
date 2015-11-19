@@ -6,25 +6,27 @@ import sys
 SHOW_ITEMS = 1 # 001
 SHOW_DICTS = 2 # 010
 SHOW_LISTS = 4 # 100
+SHOW_ALL   = 7 # 111
+
+def traverse(structure, type_filter=SHOW_ALL):
+
+    for index, item in __traverse_recursive__(structure):
+        is_list = isinstance(item, list)
+        is_dict = isinstance(item, dict)
+        is_item = not is_list and not is_dict
+        if (type_filter & SHOW_LISTS) and is_list:
+            yield index, item
+        elif (type_filter & SHOW_DICTS) and is_dict:
+            yield index, item
+        elif (type_filter & SHOW_ITEMS) and is_item:
+            yield index, item
 
 
-def traverse(structure, filter=7):
-
-    for index, item in _traverse_recursive(structure):
-        if filter == 7:
-            yield index, item
-        elif (filter & SHOW_LISTS) and isinstance(item, list):
-            yield index, item
-        elif (filter & SHOW_DICTS) and isinstance(item, dict):
-            yield index, item
-        elif (filter & SHOW_ITEMS):
-            yield index, item
-
-def _traverse_recursive(structure):
+def __traverse_recursive__(structure):
 
     if isinstance(structure, list):
         for i1, item1 in enumerate(structure):
-            for i2, item2 in traverse(item1):
+            for i2, item2 in __traverse_recursive__(item1):
                 index = [i1]
                 index.extend(i2)
                 yield index, item2
@@ -32,7 +34,7 @@ def _traverse_recursive(structure):
 
     elif isinstance(structure, dict):
         for key1, value1 in structure.iteritems():
-            for key2, value2 in traverse(value1):
+            for key2, value2 in __traverse_recursive__(value1):
                 index = [key1]
                 index.extend(key2)
                 yield index, value2
